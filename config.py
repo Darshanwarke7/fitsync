@@ -13,7 +13,8 @@ class Config:
     MYSQL_USER = os.environ.get("MYSQL_USER", "root")
     MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "")
     MYSQL_DB = os.environ.get("MYSQL_DB", "fitsync")
-    MYSQL_SSL_CA = os.environ.get("MYSQL_SSL_CA", "")  # path to CA cert, e.g. for Aiven
+    MYSQL_SSL_CA = os.environ.get("MYSQL_SSL_CA", "")  # path to CA cert, e.g. for Aiven (local dev)
+    MYSQL_SSL_CA_CONTENT = os.environ.get("MYSQL_SSL_CA_CONTENT", "")  # raw cert content (e.g. Render env var)
     MYSQL_POOL_SIZE = int(os.environ.get("MYSQL_POOL_SIZE", 5))
 
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")

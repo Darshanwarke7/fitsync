@@ -25,12 +25,23 @@ def init_pool(app):
     )
 
     # Managed MySQL providers (Aiven, PlanetScale, etc.) require TLS.
-    # Set MYSQL_SSL_CA to the path of the downloaded CA certificate to
-    # enable a verified TLS connection. If not set, connects without SSL
-    # (fine for local MySQL on localhost).
-    ssl_ca = app.config.get("MYSQL_SSL_CA")
-    if ssl_ca:
-        pool_kwargs["ssl_ca"] = ssl_ca
+    # Two ways to provide the CA certificate:
+    #   1. MYSQL_SSL_CA       - a file path to an existing ca.pem (local dev)
+    #   2. MYSQL_SSL_CA_CONTENT - the raw certificate text as an env var
+    #      (used on platforms like Render where uploading a file isn't
+    #      convenient — we write it to a temp file at startup instead)
+    ssl_ca_path = app.config.get("MYSQL_SSL_CA")
+    ssl_ca_content = app.config.get("MYSQL_SSL_CA_CONTENT")
+
+    if ssl_ca_content and not ssl_ca_path:
+        import tempfile
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".pem", delete=False)
+        tmp.write(ssl_ca_content)
+        tmp.close()
+        ssl_ca_path = tmp.name
+
+    if ssl_ca_path:
+        pool_kwargs["ssl_ca"] = ssl_ca_path
         pool_kwargs["ssl_verify_cert"] = True
 
     _pool = pooling.MySQLConnectionPool(**pool_kwargs)

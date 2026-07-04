@@ -16,3 +16,10 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Secrets and generated local files — never commit these
+ca.pem
+*.pem
+database user pas.txt
+*_output.txt
+
