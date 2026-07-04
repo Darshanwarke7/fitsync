@@ -384,61 +384,6 @@ def checkout(attendance_id):
 
 
 # ------------------------------------------------------------------
-# NOTIFICATIONS
-# ------------------------------------------------------------------
-@bp.route("/notifications")
-@roles_required("admin")
-def notifications():
-    rows = query_all(
-        """SELECT n.*, u.full_name FROM notifications n JOIN users u ON n.user_id=u.user_id
-           ORDER BY n.created_at DESC LIMIT 100"""
-    )
-    members = query_all("SELECT m.member_id, u.user_id, u.full_name FROM members m JOIN users u ON m.user_id=u.user_id")
-    return render_template("admin/notifications.html", notifications=rows, members=members)
-
-
-@bp.route("/notifications/send", methods=["POST"])
-@roles_required("admin")
-def send_notification():
-    user_id = request.form.get("user_id")
-    title = request.form.get("title")
-    message = request.form.get("message")
-    ntype = request.form.get("type") or "info"
-
-    from utils.email_utils import send_email, notification_email_html, is_email_configured
-
-    email_sent_count = 0
-
-    if user_id == "all_members":
-        member_users = query_all(
-            """SELECT u.user_id, u.full_name, u.email FROM users u
-               JOIN roles r ON u.role_id=r.role_id WHERE r.role_name='member'"""
-        )
-        for row in member_users:
-            execute(
-                "INSERT INTO notifications (user_id, title, message, type) VALUES (%s,%s,%s,%s)",
-                (row["user_id"], title, message, ntype),
-            )
-            if send_email(row["email"], title, notification_email_html(title, message, row["full_name"])):
-                email_sent_count += 1
-    else:
-        row = query_one("SELECT user_id, full_name, email FROM users WHERE user_id=%s", (user_id,))
-        execute(
-            "INSERT INTO notifications (user_id, title, message, type) VALUES (%s,%s,%s,%s)",
-            (user_id, title, message, ntype),
-        )
-        if row and send_email(row["email"], title, notification_email_html(title, message, row["full_name"])):
-            email_sent_count += 1
-
-    if is_email_configured():
-        flash(f"Notification sent. Email delivered to {email_sent_count} recipient(s).", "success")
-    else:
-        flash("Notification saved in-app. Email is not configured yet (set MAIL_USERNAME/MAIL_PASSWORD in .env to enable real emails).", "warning")
-
-    return redirect(url_for("admin.notifications"))
-
-
-# ------------------------------------------------------------------
 # SETTINGS / ADMIN MANAGEMENT
 # ------------------------------------------------------------------
 @bp.route("/settings")

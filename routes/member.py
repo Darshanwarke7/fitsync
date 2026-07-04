@@ -47,16 +47,10 @@ def dashboard():
         (member["member_id"],),
     )
 
-    unread_notifications = query_all(
-        "SELECT * FROM notifications WHERE user_id=%s AND is_read=0 ORDER BY created_at DESC LIMIT 5",
-        (session["user_id"],),
-    )
-
     return render_template(
         "member/dashboard.html", member=member, plan=plan, trainer=trainer,
         outstanding=outstanding, attendance_count=attendance_count,
         latest_measurement=latest_measurement, recent_sessions=recent_sessions,
-        unread_notifications=unread_notifications,
     )
 
 
@@ -139,10 +133,3 @@ def payments():
         "SELECT * FROM payments WHERE member_id=%s ORDER BY created_at DESC", (member["member_id"],)
     )
     return render_template("member/payments.html", payments=rows)
-
-
-@bp.route("/notifications/mark-read/<int:notification_id>", methods=["POST"])
-@roles_required("member")
-def mark_read(notification_id):
-    execute("UPDATE notifications SET is_read=1 WHERE notification_id=%s AND user_id=%s", (notification_id, session["user_id"]))
-    return jsonify({"status": "ok"})

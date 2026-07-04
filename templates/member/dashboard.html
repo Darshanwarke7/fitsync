@@ -71,24 +71,12 @@
   </div>
 
   <div class="col-lg-5">
-    <div class="panel mb-3">
+    <div class="panel">
       <div class="panel-title">Check In</div>
       <p class="text-muted small">Mark your attendance for today.</p>
       <form method="POST" action="{{ url_for('member.self_checkin') }}">
         <button class="btn btn-brand w-100"><i class="bi bi-box-arrow-in-right"></i> Check In Now</button>
       </form>
-    </div>
-
-    <div class="panel">
-      <div class="panel-title">Notifications</div>
-      {% for n in unread_notifications %}
-      <div class="py-2 border-bottom">
-        <div style="font-weight:600; font-size:0.87rem;">{{ n.title }}</div>
-        <div class="small text-muted">{{ n.message }}</div>
-      </div>
-      {% else %}
-      <div class="text-muted text-center py-3">You're all caught up!</div>
-      {% endfor %}
     </div>
   </div>
 </div>

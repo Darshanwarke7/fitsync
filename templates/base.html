@@ -31,7 +31,6 @@
       <a href="{{ url_for('admin.plans') }}" class="{{ 'active' if request.endpoint=='admin.plans' }}"><i class="bi bi-card-checklist"></i> Membership Plans</a>
       <a href="{{ url_for('admin.payments') }}" class="{{ 'active' if request.endpoint=='admin.payments' }}"><i class="bi bi-cash-coin"></i> Payments</a>
       <a href="{{ url_for('admin.attendance') }}" class="{{ 'active' if request.endpoint=='admin.attendance' }}"><i class="bi bi-calendar2-check"></i> Attendance</a>
-      <a href="{{ url_for('admin.notifications') }}" class="{{ 'active' if request.endpoint=='admin.notifications' }}"><i class="bi bi-bell"></i> Notifications</a>
       <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if request.endpoint=='admin.settings' }}"><i class="bi bi-gear"></i> Settings</a>
     {% elif current_user.role == 'trainer' %}
       <a href="{{ url_for('trainer.dashboard') }}" class="{{ 'active' if request.endpoint=='trainer.dashboard' }}"><i class="bi bi-speedometer2"></i> Dashboard</a>

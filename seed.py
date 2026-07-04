@@ -146,12 +146,6 @@ def run():
             )
             print("Sample diet plan added")
 
-        # Sample notification
-        execute(
-            "INSERT INTO notifications (user_id, title, message, type) VALUES (%s,%s,%s,'info')",
-            (member_user_id, "Welcome to FitSync!", "Your account has been set up. Check your workout & diet plan."),
-        )
-
         print("\nSeed complete. Demo logins:")
         print("  Admin:   admin@fitsync.com   / Admin@123")
         print("  Trainer: trainer@fitsync.com / Trainer@123")
