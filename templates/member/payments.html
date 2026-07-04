@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Payment History{% endblock %}
+{% block page_title %}Payment History{% endblock %}
+{% block page_sub %}Your membership fee records{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <table class="table">
+    <thead><tr><th>Invoice</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Due Date</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td class="small">{{ p.invoice_no }}</td>
+        <td>₹{{ "{:,.0f}".format(p.total_amount) }}</td>
+        <td>₹{{ "{:,.0f}".format(p.paid_amount) }}</td>
+        <td>₹{{ "{:,.0f}".format(p.outstanding_amount) }}</td>
+        <td>{{ p.due_date or '-' }}</td>
+        <td>
+          {% if p.status == 'paid' %}<span class="badge-soft badge-soft-success">Paid</span>
+          {% elif p.status == 'partial' %}<span class="badge-soft badge-soft-warning">Partial</span>
+          {% elif p.status == 'overdue' %}<span class="badge-soft badge-soft-danger">Overdue</span>
+          {% else %}<span class="badge-soft badge-soft-secondary">Unpaid</span>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-muted text-center py-4">No payment records found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

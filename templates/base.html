@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}FitSync{% endblock %} | FitSync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% if current_user %}
+<div class="mobile-topbar">
+  <div class="brand"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:#00d2a0;display:inline-block;"></span> FitSync</div>
+  <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Open menu"><i class="bi bi-list"></i></button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="dot"></span> FitSync</div>
+    <div class="sidebar-role">{{ current_user.role }} Panel</div>
+
+    {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint=='admin.dashboard' }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{{ url_for('admin.members') }}" class="{{ 'active' if request.endpoint=='admin.members' }}"><i class="bi bi-people"></i> Members</a>
+      <a href="{{ url_for('admin.trainers') }}" class="{{ 'active' if request.endpoint=='admin.trainers' }}"><i class="bi bi-person-badge"></i> Trainers</a>
+      <a href="{{ url_for('admin.plans') }}" class="{{ 'active' if request.endpoint=='admin.plans' }}"><i class="bi bi-card-checklist"></i> Membership Plans</a>
+      <a href="{{ url_for('admin.payments') }}" class="{{ 'active' if request.endpoint=='admin.payments' }}"><i class="bi bi-cash-coin"></i> Payments</a>
+      <a href="{{ url_for('admin.attendance') }}" class="{{ 'active' if request.endpoint=='admin.attendance' }}"><i class="bi bi-calendar2-check"></i> Attendance</a>
+      <a href="{{ url_for('admin.notifications') }}" class="{{ 'active' if request.endpoint=='admin.notifications' }}"><i class="bi bi-bell"></i> Notifications</a>
+      <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if request.endpoint=='admin.settings' }}"><i class="bi bi-gear"></i> Settings</a>
+    {% elif current_user.role == 'trainer' %}
+      <a href="{{ url_for('trainer.dashboard') }}" class="{{ 'active' if request.endpoint=='trainer.dashboard' }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{{ url_for('trainer.members') }}" class="{{ 'active' if request.endpoint=='trainer.members' }}"><i class="bi bi-people"></i> My Members</a>
+      <a href="{{ url_for('trainer.record_workout') }}" class="{{ 'active' if request.endpoint=='trainer.record_workout' }}"><i class="bi bi-clipboard2-pulse"></i> Record Workout</a>
+    {% elif current_user.role == 'member' %}
+      <a href="{{ url_for('member.dashboard') }}" class="{{ 'active' if request.endpoint=='member.dashboard' }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{{ url_for('member.workout') }}" class="{{ 'active' if request.endpoint=='member.workout' }}"><i class="bi bi-clipboard2-pulse"></i> Workout Plan</a>
+      <a href="{{ url_for('member.diet') }}" class="{{ 'active' if request.endpoint=='member.diet' }}"><i class="bi bi-egg-fried"></i> Diet Plan</a>
+      <a href="{{ url_for('member.attendance') }}" class="{{ 'active' if request.endpoint=='member.attendance' }}"><i class="bi bi-calendar2-check"></i> Attendance</a>
+      <a href="{{ url_for('member.progress') }}" class="{{ 'active' if request.endpoint=='member.progress' }}"><i class="bi bi-graph-up-arrow"></i> Progress</a>
+      <a href="{{ url_for('member.payments') }}" class="{{ 'active' if request.endpoint=='member.payments' }}"><i class="bi bi-receipt"></i> Payments</a>
+    {% endif %}
+
+    <a href="{{ url_for('auth.logout') }}" class="logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+        <div class="sub">{% block page_sub %}Welcome back to FitSync{% endblock %}</div>
+      </div>
+      <div class="user-chip">
+        <div class="avatar-circle">{{ current_user.full_name[0] | upper }}</div>
+        <div>
+          <div style="font-weight:600; font-size:0.88rem;">{{ current_user.full_name }}</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:capitalize;">{{ current_user.role }}</div>
+        </div>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+  {% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_sub %}Overview of gym performance and operations{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-brand"><i class="bi bi-people"></i></div>
+      <div class="value">{{ total_members }}</div>
+      <div class="label">Total Members</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-accent"><i class="bi bi-person-check"></i></div>
+      <div class="value">{{ active_members }}</div>
+      <div class="label">Active Members</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-warning-grad"><i class="bi bi-currency-rupee"></i></div>
+      <div class="value">₹{{ "{:,.0f}".format(revenue) }}</div>
+      <div class="label">Total Revenue</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-danger-grad"><i class="bi bi-exclamation-circle"></i></div>
+      <div class="value">₹{{ "{:,.0f}".format(outstanding) }}</div>
+      <div class="label">Outstanding Fees</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="icon-badge bg-brand"><i class="bi bi-calendar2-check"></i></div>
+      <div class="value">{{ today_attendance }}</div>
+      <div class="label">Today's Attendance</div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="panel">
+      <div class="panel-title">Attendance — Last 7 Days</div>
+      <canvas id="attendanceChart" height="80"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-title">
+        Outstanding Fee Alerts
+        <a href="{{ url_for('admin.payments') }}" class="btn btn-sm btn-outline-brand">View all</a>
+      </div>
+      <table class="table">
+        <thead><tr><th>Member</th><th>Amount</th><th>Due</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for o in outstanding_list %}
+          <tr>
+            <td>{{ o.full_name }}</td>
+            <td>₹{{ "{:,.0f}".format(o.outstanding_amount) }}</td>
+            <td>{{ o.due_date }}</td>
+            <td>
+              {% if o.status == 'overdue' %}<span class="badge-soft badge-soft-danger">Overdue</span>
+              {% else %}<span class="badge-soft badge-soft-warning">{{ o.status | capitalize }}</span>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="text-muted text-center py-3">No outstanding fees 🎉</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-title">
+        Recently Joined
+        <a href="{{ url_for('admin.members') }}" class="btn btn-sm btn-outline-brand">Manage</a>
+      </div>
+      {% for m in recent_members %}
+      <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <div class="avatar-circle">{{ m.full_name[0]|upper }}</div>
+          <div>
+            <div style="font-weight:600; font-size:0.88rem;">{{ m.full_name }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">{{ m.join_date }}</div>
+          </div>
+        </div>
+        {% if m.status == 'active' %}<span class="badge-soft badge-soft-success">Active</span>
+        {% else %}<span class="badge-soft badge-soft-secondary">{{ m.status | capitalize }}</span>{% endif %}
+      </div>
+      {% else %}
+      <div class="text-muted text-center py-3">No members yet</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const labels = [{% for a in attendance_trend %}"{{ a.attendance_date }}",{% endfor %}];
+const values = [{% for a in attendance_trend %}{{ a.c }},{% endfor %}];
+new Chart(document.getElementById('attendanceChart'), {
+  type: 'line',
+  data: { labels: labels, datasets: [{ label: 'Check-ins', data: values, borderColor: '#6C5CE7', backgroundColor: 'rgba(108,92,231,0.12)', fill: true, tension: 0.35 }] },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Attendance Management{% endblock %}
+{% block page_sub %}Today — {{ today }}{% endblock %}
+
+{% block content %}
+<div class="panel mb-3">
+  <div class="panel-title">Quick Check-In</div>
+  <form method="POST" action="{{ url_for('admin.checkin') }}" class="d-flex gap-2">
+    <select class="form-select" name="member_id" required style="max-width:340px;">
+      <option value="">Select member...</option>
+      {% for m in members %}<option value="{{ m.member_id }}">{{ m.full_name }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-brand"><i class="bi bi-box-arrow-in-right"></i> Check In</button>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Today's Records ({{ records|length }})</div>
+  <table class="table">
+    <thead><tr><th>Member</th><th>Check In</th><th>Check Out</th><th>Method</th><th></th></tr></thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.check_in.strftime('%I:%M %p') }}</td>
+        <td>{{ r.check_out.strftime('%I:%M %p') if r.check_out else '-' }}</td>
+        <td><span class="badge-soft badge-soft-info">{{ r.method | upper }}</span></td>
+        <td>
+          {% if not r.check_out %}
+          <form method="POST" action="{{ url_for('admin.checkout', attendance_id=r.attendance_id) }}">
+            <button class="btn btn-sm btn-outline-brand">Check Out</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted text-center py-4">No check-ins recorded today.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

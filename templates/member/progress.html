@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}My Progress{% endblock %}
+{% block page_title %}Progress Tracking{% endblock %}
+{% block page_sub %}Your body measurements over time{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-3">
+  {% if prediction and prediction.status == 'ok' %}
+  <div class="col-md-6">
+    <div class="ai-box h-100">
+      <span class="ai-badge">AI PROGRESS PREDICTION</span>
+      <div class="mt-2" style="font-size:0.9rem;">
+        Based on your recent trend, your weight is projected to reach
+        <strong>{{ prediction.predicted_value }} kg</strong> by <strong>{{ prediction.predicted_date }}</strong>
+        ({{ prediction.trend }} trend, {{ prediction.weekly_rate_of_change }} kg/week).
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if plateau %}
+  <div class="col-md-6">
+    <div class="ai-box h-100">
+      <span class="ai-badge">AI PLATEAU DETECTION</span>
+      <div class="mt-2" style="font-size:0.9rem;">{{ plateau.message }}</div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="panel mb-3">
+  <div class="panel-title">Weight & BMI Trend</div>
+  <canvas id="progressChart" height="90"></canvas>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Measurement History</div>
+  <table class="table">
+    <thead><tr><th>Date</th><th>Weight</th><th>BMI</th><th>Body Fat %</th><th>Chest</th><th>Waist</th><th>Arms</th><th>Legs</th><th>PR</th></tr></thead>
+    <tbody>
+      {% for m in measurements | reverse %}
+      <tr>
+        <td>{{ m.record_date }}</td><td>{{ m.weight_kg or '-' }}</td><td>{{ m.bmi or '-' }}</td>
+        <td>{{ m.body_fat_percent or '-' }}</td><td>{{ m.chest_cm or '-' }}</td><td>{{ m.waist_cm or '-' }}</td>
+        <td>{{ m.arms_cm or '-' }}</td><td>{{ m.legs_cm or '-' }}</td>
+        <td>{% if m.is_pr %}<span class="badge-soft badge-soft-success">{{ m.pr_note or 'PR' }}</span>{% endif %}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9" class="text-muted text-center py-4">No measurements recorded yet. Your trainer will log these.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const labels = [{% for m in measurements %}"{{ m.record_date }}",{% endfor %}];
+const weights = [{% for m in measurements %}{{ m.weight_kg or 'null' }},{% endfor %}];
+const bmis = [{% for m in measurements %}{{ m.bmi or 'null' }},{% endfor %}];
+
+new Chart(document.getElementById('progressChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      { label: 'Weight (kg)', data: weights, borderColor: '#6C5CE7', backgroundColor: 'rgba(108,92,231,0.1)', fill: true, tension: 0.3, yAxisID: 'y' },
+      { label: 'BMI', data: bmis, borderColor: '#00d2a0', tension: 0.3, yAxisID: 'y1' }
+    ]
+  },
+  options: {
+    scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }
+  }
+});
+</script>
+{% endblock %}

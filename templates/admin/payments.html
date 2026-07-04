@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Payments{% endblock %}
+{% block page_title %}Fees & Payments{% endblock %}
+{% block page_sub %}Track membership payments and outstanding dues{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+  <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#addPaymentModal"><i class="bi bi-plus-lg"></i> New Fee Record</button>
+</div>
+
+<div class="panel">
+  <table class="table">
+    <thead><tr><th>Invoice</th><th>Member</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Due Date</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td class="small">{{ p.invoice_no }}</td>
+        <td>{{ p.full_name }}</td>
+        <td>₹{{ "{:,.0f}".format(p.total_amount) }}</td>
+        <td>₹{{ "{:,.0f}".format(p.paid_amount) }}</td>
+        <td>₹{{ "{:,.0f}".format(p.outstanding_amount) }}</td>
+        <td>{{ p.due_date or '-' }}</td>
+        <td>
+          {% if p.status == 'paid' %}<span class="badge-soft badge-soft-success">Paid</span>
+          {% elif p.status == 'partial' %}<span class="badge-soft badge-soft-warning">Partial</span>
+          {% elif p.status == 'overdue' %}<span class="badge-soft badge-soft-danger">Overdue</span>
+          {% else %}<span class="badge-soft badge-soft-secondary">Unpaid</span>{% endif %}
+        </td>
+        <td>
+          {% if p.outstanding_amount > 0 %}
+          <button class="btn btn-sm btn-outline-brand" data-bs-toggle="modal" data-bs-target="#recordModal{{ p.payment_id }}">Record</button>
+          {% endif %}
+        </td>
+      </tr>
+      <div class="modal fade" id="recordModal{{ p.payment_id }}" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.record_payment', payment_id=p.payment_id) }}">
+              <div class="modal-header"><h6 class="modal-title">Record Payment — {{ p.full_name }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <label class="form-label">Amount Received (₹)</label>
+                <input type="number" step="0.01" max="{{ p.outstanding_amount }}" class="form-control" name="amount" required>
+                <div class="small text-muted mt-1">Outstanding: ₹{{ "{:,.0f}".format(p.outstanding_amount) }}</div>
+              </div>
+              <div class="modal-footer"><button class="btn btn-brand btn-sm">Save</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <tr><td colspan="8" class="text-muted text-center py-4">No payment records.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('admin.add_payment') }}">
+        <div class="modal-header"><h5 class="modal-title">New Fee Record</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Member</label>
+            <select class="form-select" name="member_id" required>
+              {% for m in members %}<option value="{{ m.member_id }}">{{ m.full_name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="row g-2">
+            <div class="col-6"><label class="form-label">Total Amount</label><input type="number" step="0.01" class="form-control" name="total_amount" required></div>
+            <div class="col-6"><label class="form-label">Paid Now</label><input type="number" step="0.01" class="form-control" name="paid_amount" value="0"></div>
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-6"><label class="form-label">Due Date</label><input type="date" class="form-control" name="due_date"></div>
+            <div class="col-6">
+              <label class="form-label">Method</label>
+              <select class="form-select" name="payment_method">
+                <option value="cash">Cash</option><option value="card">Card</option><option value="upi">UPI</option><option value="bank_transfer">Bank Transfer</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-brand">Save Record</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

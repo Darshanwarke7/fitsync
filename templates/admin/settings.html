@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block page_sub %}System preferences & admin accounts{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-title">Add New Admin</div>
+      <p class="text-muted small">Only existing admins can create new admin accounts — there's no public admin signup, by design.</p>
+      <form method="POST" action="{{ url_for('admin.add_admin') }}">
+        <div class="mb-2"><label class="form-label">Full Name</label><input class="form-control" name="full_name" required></div>
+        <div class="mb-2"><label class="form-label">Email</label><input type="email" class="form-control" name="email" required></div>
+        <div class="mb-2"><label class="form-label">Phone</label><input class="form-control" name="phone"></div>
+        <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" name="password" required></div>
+        <button class="btn btn-brand w-100">Create Admin</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="panel mb-3">
+      <div class="panel-title">Admin Accounts</div>
+      <table class="table">
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Created</th></tr></thead>
+        <tbody>
+          {% for a in admins %}
+          <tr>
+            <td>{{ a.full_name }}{% if a.user_id == current_user.user_id %} <span class="badge-soft badge-soft-info">You</span>{% endif %}</td>
+            <td>{{ a.email }}</td>
+            <td>{{ a.phone or '-' }}</td>
+            <td>{{ a.created_at.strftime('%d %b %Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Account Notes</div>
+      <p class="text-muted small mb-1"><strong>Trainers</strong> are created by an admin from Admin → Trainers. There's no public trainer signup.</p>
+      <p class="text-muted small mb-1"><strong>Members</strong> self-register via the Register page — their membership plan and trainer are assigned afterward by an admin in Admin → Members.</p>
+      <p class="text-muted small mb-0">Additional configuration (branding, email/SMS gateways, AI provider keys) can be managed via environment variables in the <code>.env</code> file — see <code>OPENAI_API_KEY</code> to enable hosted-LLM powered AI features instead of the built-in rule-based engine.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

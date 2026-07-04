@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+{% block page_title %}Welcome, {{ member.full_name.split(' ')[0] }}{% endblock %}
+{% block page_sub %}Here's your fitness snapshot{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-brand"><i class="bi bi-card-checklist"></i></div>
+      <div class="value" style="font-size:1.1rem;">{{ plan.plan_name if plan else 'No Plan' }}</div>
+      <div class="label">Membership Status: {{ member.status | capitalize }}</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-accent"><i class="bi bi-calendar2-check"></i></div>
+      <div class="value">{{ attendance_count }}</div>
+      <div class="label">Visits This Month</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-warning-grad"><i class="bi bi-exclamation-circle"></i></div>
+      <div class="value">₹{{ "{:,.0f}".format(outstanding) }}</div>
+      <div class="label">Outstanding Fees</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="icon-badge bg-danger-grad"><i class="bi bi-heart-pulse"></i></div>
+      <div class="value">{{ latest_measurement.weight_kg if latest_measurement else '-' }} kg</div>
+      <div class="label">Latest Weight</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel mb-3">
+      <div class="panel-title">
+        Your Trainer
+      </div>
+      {% if trainer %}
+      <div class="d-flex align-items-center gap-3">
+        <div class="avatar-circle" style="width:50px;height:50px;font-size:1.2rem;">{{ trainer.full_name[0]|upper }}</div>
+        <div>
+          <div style="font-weight:700;">{{ trainer.full_name }}</div>
+          <div class="text-muted small"><i class="bi bi-telephone"></i> {{ trainer.phone or '-' }}</div>
+        </div>
+      </div>
+      {% else %}
+      <div class="text-muted">No trainer assigned yet. Contact the front desk.</div>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Recent Workout Sessions</div>
+      {% for s in recent_sessions %}
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <div style="font-weight:600; font-size:0.9rem;">{{ s.title }}</div>
+          <div class="small text-muted">{{ s.session_date }}</div>
+        </div>
+        <span class="badge-soft badge-soft-info">{{ s.total_calories }} kcal</span>
+      </div>
+      {% else %}
+      <div class="text-muted text-center py-3">No sessions logged yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="panel mb-3">
+      <div class="panel-title">Check In</div>
+      <p class="text-muted small">Mark your attendance for today.</p>
+      <form method="POST" action="{{ url_for('member.self_checkin') }}">
+        <button class="btn btn-brand w-100"><i class="bi bi-box-arrow-in-right"></i> Check In Now</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Notifications</div>
+      {% for n in unread_notifications %}
+      <div class="py-2 border-bottom">
+        <div style="font-weight:600; font-size:0.87rem;">{{ n.title }}</div>
+        <div class="small text-muted">{{ n.message }}</div>
+      </div>
+      {% else %}
+      <div class="text-muted text-center py-3">You're all caught up!</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

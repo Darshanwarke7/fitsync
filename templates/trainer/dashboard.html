@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Trainer Dashboard{% endblock %}
+{% block page_title %}Trainer Dashboard{% endblock %}
+{% block page_sub %}Overview of your assigned members{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="icon-badge bg-brand"><i class="bi bi-people"></i></div>
+      <div class="value">{{ member_count }}</div>
+      <div class="label">Assigned Members</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="icon-badge bg-accent"><i class="bi bi-clipboard2-pulse"></i></div>
+      <div class="value">{{ today_sessions|length }}</div>
+      <div class="label">Sessions Today</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('trainer.record_workout') }}" class="stat-card text-decoration-none d-block">
+      <div class="icon-badge bg-warning-grad"><i class="bi bi-plus-lg"></i></div>
+      <div class="value" style="font-size:1.1rem; color:var(--text-dark);">Record Workout</div>
+      <div class="label">Log a new session</div>
+    </a>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">My Members</div>
+  <table class="table">
+    <thead><tr><th>Name</th><th>Email</th><th>Goal</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for m in members %}
+      <tr>
+        <td>{{ m.full_name }}</td>
+        <td>{{ m.email }}</td>
+        <td>{{ m.goal }}</td>
+        <td>{% if m.status == 'active' %}<span class="badge-soft badge-soft-success">Active</span>{% else %}<span class="badge-soft badge-soft-secondary">{{ m.status }}</span>{% endif %}</td>
+        <td><a href="{{ url_for('trainer.member_detail', member_id=m.member_id) }}" class="btn btn-sm btn-outline-brand">View</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted text-center py-4">No members assigned to you yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

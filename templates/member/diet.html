@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Diet Plan{% endblock %}
+{% block page_title %}Diet Plans{% endblock %}
+{% block page_sub %}Nutrition guidance from your trainer{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  {% for d in plans %}
+  <div class="col-lg-6">
+    <div class="panel h-100">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h6 class="mb-0">{{ d.title }}</h6>
+        <span class="badge-soft badge-soft-info">{{ d.goal }}</span>
+      </div>
+      <div class="d-flex gap-3 mb-3">
+        <div><div style="font-weight:800; font-size:1.3rem;">{{ d.daily_calories or '-' }}</div><div class="small text-muted">kcal/day</div></div>
+        <div><div style="font-weight:800; font-size:1.3rem;">{{ d.protein_g or 0 }}g</div><div class="small text-muted">Protein</div></div>
+        <div><div style="font-weight:800; font-size:1.3rem;">{{ d.carbs_g or 0 }}g</div><div class="small text-muted">Carbs</div></div>
+        <div><div style="font-weight:800; font-size:1.3rem;">{{ d.fat_g or 0 }}g</div><div class="small text-muted">Fat</div></div>
+      </div>
+      {% if d.meal_plan %}<div class="small mb-2"><strong>Meal Plan:</strong> {{ d.meal_plan }}</div>{% endif %}
+      {% if d.notes %}<div class="small text-muted"><em>{{ d.notes }}</em></div>{% endif %}
+      <div class="small text-muted mt-2">Created {{ d.created_at.strftime('%d %b %Y') }}</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12 panel text-center text-muted py-5">No diet plan assigned yet. Ask your trainer to create one.</div>
+  {% endfor %}
+</div>
+{% endblock %}

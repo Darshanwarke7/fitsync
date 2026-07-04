@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block auth_content %}
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width:520px;">
+    <div class="brand"><span style="width:10px;height:10px;border-radius:50%;background:#00d2a0;display:inline-block;"></span> FitSync</div>
+    <div class="subtitle">Create your member account and start training</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" name="full_name" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone</label>
+          <input type="text" class="form-control" name="phone">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" name="password" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Gender</label>
+          <select class="form-select" name="gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fitness Goal</label>
+          <select class="form-select" name="goal">
+            <option value="weight_loss">Weight Loss</option>
+            <option value="muscle_gain">Muscle Gain</option>
+            <option value="general fitness">General Fitness</option>
+            <option value="strength">Strength</option>
+            <option value="endurance">Endurance</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <div class="alert alert-info py-2 mb-0" style="font-size:0.82rem;">
+            <i class="bi bi-info-circle"></i> Your membership plan and trainer will be assigned by the gym admin after your account is verified.
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-brand w-100 py-2 mt-4">Create Account</button>
+    </form>
+
+    <div class="text-center mt-3" style="font-size:0.88rem;">
+      Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

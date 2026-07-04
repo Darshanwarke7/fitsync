@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Attendance History{% endblock %}
+{% block page_sub %}Your gym check-in records{% endblock %}
+
+{% block content %}
+<div class="panel mb-3">
+  <form method="POST" action="{{ url_for('member.self_checkin') }}">
+    <button class="btn btn-brand"><i class="bi bi-box-arrow-in-right"></i> Check In Today</button>
+  </form>
+</div>
+
+<div class="panel">
+  <table class="table">
+    <thead><tr><th>Date</th><th>Check In</th><th>Check Out</th></tr></thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td>{{ r.attendance_date }}</td>
+        <td>{{ r.check_in.strftime('%I:%M %p') }}</td>
+        <td>{{ r.check_out.strftime('%I:%M %p') if r.check_out else '-' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="text-muted text-center py-4">No attendance records yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

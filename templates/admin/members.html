@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block page_title %}Member Management{% endblock %}
+{% block page_sub %}Add, edit, and search all gym members{% endblock %}
+
+{% block content %}
+<div class="panel mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <form class="d-flex gap-2" method="GET">
+      <input type="text" name="q" class="form-control" placeholder="Search by name or email..." value="{{ search }}" style="width:280px;">
+      <button class="btn btn-outline-brand"><i class="bi bi-search"></i></button>
+    </form>
+    <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#addMemberModal"><i class="bi bi-plus-lg"></i> Add Member</button>
+  </div>
+</div>
+
+<div class="panel">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Contact</th><th>Trainer</th><th>Plan</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+    <tbody>
+      {% for m in members %}
+      <tr>
+        <td><strong>{{ m.full_name }}</strong><br><span class="text-muted small">{{ m.goal }}</span></td>
+        <td>{{ m.email }}<br><span class="text-muted small">{{ m.phone or '-' }}</span></td>
+        <td>{{ m.trainer_name or 'Unassigned' }}</td>
+        <td>{{ m.plan_name or '-' }}</td>
+        <td>
+          {% if m.status == 'active' %}<span class="badge-soft badge-soft-success">Active</span>
+          {% elif m.status == 'expired' %}<span class="badge-soft badge-soft-danger">Expired</span>
+          {% else %}<span class="badge-soft badge-soft-secondary">Inactive</span>{% endif %}
+        </td>
+        <td>{{ m.join_date }}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-brand" data-bs-toggle="modal" data-bs-target="#editModal{{ m.member_id }}"><i class="bi bi-pencil"></i></button>
+          <form method="POST" action="{{ url_for('admin.delete_member', member_id=m.member_id) }}" class="d-inline" onsubmit="return confirm('Delete this member?');">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+
+      <div class="modal fade" id="editModal{{ m.member_id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.edit_member', member_id=m.member_id) }}">
+              <div class="modal-header"><h5 class="modal-title">Edit {{ m.full_name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <div class="mb-2"><label class="form-label">Full Name</label><input class="form-control" name="full_name" value="{{ m.full_name }}"></div>
+                <div class="mb-2"><label class="form-label">Phone</label><input class="form-control" name="phone" value="{{ m.phone or '' }}"></div>
+                <div class="mb-2"><label class="form-label">Goal</label><input class="form-control" name="goal" value="{{ m.goal or '' }}"></div>
+                <div class="mb-2">
+                  <label class="form-label">Trainer</label>
+                  <select class="form-select" name="trainer_id">
+                    <option value="">Unassigned</option>
+                    {% for t in trainers %}<option value="{{ t.trainer_id }}" {{ 'selected' if t.trainer_id == m.t_id }}>{{ t.full_name }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Plan</label>
+                  <select class="form-select" name="plan_id">
+                    <option value="">None</option>
+                    {% for p in plans %}<option value="{{ p.plan_id }}" {{ 'selected' if p.plan_id == m.plan_id }}>{{ p.plan_name }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Status</label>
+                  <select class="form-select" name="status">
+                    <option value="active" {{ 'selected' if m.status=='active' }}>Active</option>
+                    <option value="inactive" {{ 'selected' if m.status=='inactive' }}>Inactive</option>
+                    <option value="expired" {{ 'selected' if m.status=='expired' }}>Expired</option>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer"><button class="btn btn-brand">Save Changes</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <tr><td colspan="7" class="text-muted text-center py-4">No members found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('admin.add_member') }}">
+        <div class="modal-header"><h5 class="modal-title">Add New Member</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md-6"><label class="form-label">Full Name</label><input class="form-control" name="full_name" required></div>
+            <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" name="email" required></div>
+            <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" name="phone"></div>
+            <div class="col-md-6"><label class="form-label">Password</label><input class="form-control" name="password" placeholder="default: member123"></div>
+            <div class="col-md-6">
+              <label class="form-label">Gender</label>
+              <select class="form-select" name="gender"><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select>
+            </div>
+            <div class="col-md-6"><label class="form-label">Height (cm)</label><input type="number" class="form-control" name="height_cm"></div>
+            <div class="col-md-6">
+              <label class="form-label">Goal</label>
+              <select class="form-select" name="goal">
+                <option value="weight_loss">Weight Loss</option>
+                <option value="muscle_gain">Muscle Gain</option>
+                <option value="general fitness">General Fitness</option>
+                <option value="strength">Strength</option>
+                <option value="endurance">Endurance</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Assign Trainer</label>
+              <select class="form-select" name="trainer_id">
+                <option value="">Unassigned</option>
+                {% for t in trainers %}<option value="{{ t.trainer_id }}">{{ t.full_name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Membership Plan</label>
+              <select class="form-select" name="plan_id">
+                <option value="">None</option>
+                {% for p in plans %}<option value="{{ p.plan_id }}">{{ p.plan_name }} — ₹{{ p.amount }}</option>{% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-brand">Add Member</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

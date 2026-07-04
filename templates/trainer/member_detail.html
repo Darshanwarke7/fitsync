@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{{ member.full_name }}{% endblock %}
+{% block page_title %}{{ member.full_name }}{% endblock %}
+{% block page_sub %}{{ member.email }} · Goal: {{ member.goal }}{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="panel mb-3">
+      <div class="panel-title">
+        Progress History
+        <a href="{{ url_for('trainer.workout_history', member_id=member.member_id) }}" class="btn btn-sm btn-outline-brand">Workout History</a>
+      </div>
+      <canvas id="weightChart" height="90"></canvas>
+    </div>
+
+    {% if plateau %}
+    <div class="ai-box mb-3">
+      <span class="ai-badge">AI PLATEAU DETECTION</span>
+      <p class="mb-0 mt-2" style="font-size:0.9rem;">{{ plateau.message }}</p>
+    </div>
+    {% endif %}
+
+    <div class="panel mb-3">
+      <div class="panel-title">Log Body Measurement</div>
+      <form method="POST" action="{{ url_for('trainer.update_progress', member_id=member.member_id) }}">
+        <div class="row g-2">
+          <div class="col-md-3"><label class="form-label">Date</label><input type="date" class="form-control" name="record_date"></div>
+          <div class="col-md-3"><label class="form-label">Weight (kg)</label><input type="number" step="0.1" class="form-control" name="weight_kg"></div>
+          <div class="col-md-3"><label class="form-label">Body Fat %</label><input type="number" step="0.1" class="form-control" name="body_fat_percent"></div>
+          <div class="col-md-3"><label class="form-label">Chest (cm)</label><input type="number" step="0.1" class="form-control" name="chest_cm"></div>
+          <div class="col-md-3"><label class="form-label">Waist (cm)</label><input type="number" step="0.1" class="form-control" name="waist_cm"></div>
+          <div class="col-md-3"><label class="form-label">Arms (cm)</label><input type="number" step="0.1" class="form-control" name="arms_cm"></div>
+          <div class="col-md-3"><label class="form-label">Legs (cm)</label><input type="number" step="0.1" class="form-control" name="legs_cm"></div>
+          <div class="col-md-3 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="is_pr" id="isPr">
+              <label class="form-check-label small" for="isPr">Personal Record?</label>
+            </div>
+          </div>
+          <div class="col-12"><input class="form-control" name="pr_note" placeholder="PR note (optional)"></div>
+        </div>
+        <button class="btn btn-brand mt-3">Save Measurement</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="panel mb-3">
+      <div class="panel-title">AI Workout Generator <span class="ai-badge">AI</span></div>
+      <button class="btn btn-sm btn-outline-brand w-100 mb-2" onclick="fetchAI('{{ url_for('trainer.ai_workout', member_id=member.member_id) }}', 'workoutAI', renderWorkout)">Generate Plan</button>
+      <div id="workoutAI" class="small"></div>
+    </div>
+
+    <div class="panel mb-3">
+      <div class="panel-title">AI Diet Recommendation <span class="ai-badge">AI</span></div>
+      <button class="btn btn-sm btn-outline-brand w-100 mb-2" onclick="fetchAI('{{ url_for('trainer.ai_diet', member_id=member.member_id) }}', 'dietAI', renderDiet)">Generate Recommendation</button>
+      <div id="dietAI" class="small"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Create Diet Plan</div>
+      <form method="POST" action="{{ url_for('trainer.create_diet_plan', member_id=member.member_id) }}">
+        <input class="form-control mb-2" name="title" placeholder="Plan title" required>
+        <input class="form-control mb-2" name="goal" placeholder="Goal (e.g. muscle_gain)">
+        <div class="row g-2 mb-2">
+          <div class="col-4"><input type="number" class="form-control" name="daily_calories" placeholder="Kcal"></div>
+          <div class="col-4"><input type="number" class="form-control" name="protein_g" placeholder="Protein g"></div>
+          <div class="col-4"><input type="number" class="form-control" name="carbs_g" placeholder="Carbs g"></div>
+        </div>
+        <input type="number" class="form-control mb-2" name="fat_g" placeholder="Fat (g)">
+        <textarea class="form-control mb-2" name="meal_plan" rows="3" placeholder="Meal plan details"></textarea>
+        <input class="form-control mb-2" name="notes" placeholder="Notes">
+        <button class="btn btn-brand w-100">Save Diet Plan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Existing Diet Plans</div>
+  <table class="table">
+    <thead><tr><th>Title</th><th>Goal</th><th>Calories</th><th>Macros (P/C/F)</th><th>Created</th></tr></thead>
+    <tbody>
+      {% for d in diet_plans %}
+      <tr>
+        <td>{{ d.title }}</td><td>{{ d.goal }}</td><td>{{ d.daily_calories or '-' }}</td>
+        <td>{{ d.protein_g or 0 }}g / {{ d.carbs_g or 0 }}g / {{ d.fat_g or 0 }}g</td>
+        <td>{{ d.created_at.strftime('%d %b %Y') }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted text-center py-3">No diet plans yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const mLabels = [{% for m in measurements %}"{{ m.record_date }}",{% endfor %}];
+const mWeights = [{% for m in measurements %}{{ m.weight_kg or 'null' }},{% endfor %}];
+const mBmi = [{% for m in measurements %}{{ m.bmi or 'null' }},{% endfor %}];
+
+new Chart(document.getElementById('weightChart'), {
+  type: 'line',
+  data: {
+    labels: mLabels,
+    datasets: [
+      { label: 'Weight (kg)', data: mWeights, borderColor: '#6C5CE7', backgroundColor: 'rgba(108,92,231,0.1)', tension: 0.3, fill: true, yAxisID: 'y' },
+      { label: 'BMI', data: mBmi, borderColor: '#00d2a0', tension: 0.3, yAxisID: 'y1' }
+    ]
+  },
+  options: {
+    scales: {
+      y: { type: 'linear', position: 'left' },
+      y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+function renderWorkout(data) {
+  if (!data.plan) return '<div class="text-danger">No plan generated.</div>';
+  let html = `<div class="mb-1 small text-muted">${data.days_per_week}-day split · ${data.level}</div>`;
+  data.plan.forEach(day => {
+    html += `<div class="mt-2"><strong>Day ${day.day}: ${day.focus}</strong><ul class="mb-1">`;
+    day.exercises.forEach(ex => {
+      html += `<li>${ex.exercise} — ${ex.sets}x${ex.reps}</li>`;
+    });
+    html += `</ul></div>`;
+  });
+  return html;
+}
+
+function renderDiet(data) {
+  if (!data.target_calories) return '<div class="text-danger">Could not generate.</div>';
+  return `
+    <div class="mb-1"><strong>${data.target_calories} kcal/day</strong> (maintenance: ${data.maintenance_calories || '-'})</div>
+    <div class="small mb-2">Protein: ${data.macros.protein_g}g · Carbs: ${data.macros.carbs_g}g · Fat: ${data.macros.fat_g}g</div>
+    <div class="small text-muted">${data.note}</div>
+  `;
+}
+</script>
+{% endblock %}

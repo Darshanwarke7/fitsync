@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Membership Plans{% endblock %}
+{% block page_title %}Membership Plans{% endblock %}
+{% block page_sub %}Configure the plans members can subscribe to{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+  <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#addPlanModal"><i class="bi bi-plus-lg"></i> Add Plan</button>
+</div>
+
+<div class="row g-3">
+  {% for p in plans %}
+  <div class="col-md-3">
+    <div class="plan-card h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <h5 class="mb-1">{{ p.plan_name }}</h5>
+        {% if p.is_active %}<span class="badge-soft badge-soft-success">Active</span>{% else %}<span class="badge-soft badge-soft-secondary">Disabled</span>{% endif %}
+      </div>
+      <div class="text-muted small mb-2">{{ p.description or 'No description' }}</div>
+      <div style="font-size:1.5rem; font-weight:800;">₹{{ "{:,.0f}".format(p.amount) }}</div>
+      <div class="text-muted small mb-3">{{ p.duration_months }} month(s)</div>
+      <form method="POST" action="{{ url_for('admin.toggle_plan', plan_id=p.plan_id) }}">
+        <button class="btn btn-sm btn-outline-brand w-100">{{ 'Disable' if p.is_active else 'Enable' }}</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12 text-muted text-center py-5">No plans yet.</div>
+  {% endfor %}
+</div>
+
+<div class="modal fade" id="addPlanModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('admin.add_plan') }}">
+        <div class="modal-header"><h5 class="modal-title">New Membership Plan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-2"><label class="form-label">Plan Name</label><input class="form-control" name="plan_name" required></div>
+          <div class="mb-2"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+          <div class="row g-2">
+            <div class="col-6"><label class="form-label">Duration (months)</label><input type="number" class="form-control" name="duration_months" required></div>
+            <div class="col-6"><label class="form-label">Amount (₹)</label><input type="number" step="0.01" class="form-control" name="amount" required></div>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-brand">Create Plan</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}My Workouts{% endblock %}
+{% block page_title %}Workout Plan & History{% endblock %}
+{% block page_sub %}Sessions logged by your trainer{% endblock %}
+
+{% block content %}
+{% for s in sessions %}
+<div class="panel mb-3">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <h6 class="mb-0">{{ s.title }}</h6>
+      <div class="small text-muted">{{ s.session_date }} · {{ s.total_duration_min }} min · {{ s.total_calories }} kcal burned</div>
+    </div>
+  </div>
+  {% if s.trainer_notes %}<div class="small mt-2" style="background:#f7f7fb; padding:8px 12px; border-radius:8px;"><i class="bi bi-chat-quote"></i> {{ s.trainer_notes }}</div>{% endif %}
+  <table class="table mt-2">
+    <thead><tr><th>Muscle Group</th><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th></tr></thead>
+    <tbody>
+      {% for log in logs_by_session[s.session_id] %}
+      <tr><td>{{ log.muscle_group }}</td><td>{{ log.exercise_name }}</td><td>{{ log.sets }}</td><td>{{ log.reps }}</td><td>{{ log.weight_kg }} kg</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel text-center text-muted py-5">No workout sessions logged yet. Your trainer will add these after each session.</div>
+{% endfor %}
+{% endblock %}
